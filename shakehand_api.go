@@ -3,8 +3,6 @@ package antchain
 import (
 	"strconv"
 	"time"
-
-	"github.com/tidwall/gjson"
 )
 
 func (c *Client) Shakehand() (err error) {
@@ -30,21 +28,12 @@ func (c *Client) getToken() (err error) {
 		"secret":   signature,
 	}
 
-	bytes, err := c.doRequest(SHAKE_HAND, params)
+	token, err := c.doRequest(SHAKE_HAND, params)
 	if err != nil {
 		return
 	}
 
-	result := gjson.Get(string(bytes), "success")
-	if result.Bool() == false {
-		err = &AccessError{
-			message: gjson.Get(string(bytes), "data").String(),
-		}
-		return
-	}
-
-	token := gjson.Get(string(bytes), "data")
-	c.Token = token.String()
+	c.Token = string(token)
 	c.TokenExpiresAt = timeUnix + 1800
 	return
 }

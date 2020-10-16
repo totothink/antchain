@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+
+	"github.com/tidwall/gjson"
 )
 
 // ParamsMap 参数 Map
@@ -50,5 +52,15 @@ func (c *Client) doRequest(path string, paramsMap ParamsMap) (data []byte, err e
 	defer resp.Body.Close()
 	data, _ = ioutil.ReadAll(resp.Body)
 	fmt.Printf("doRequest path=%v got response=%v\n", fullPath, string(data))
+
+	result := gjson.Get(string(data), "success")
+	if result.Bool() == false {
+		err = &AccessError{
+			message: gjson.Get(string(data), "data").String(),
+		}
+		return
+	}
+
+	data = []byte(gjson.Get(string(data), "data").String())
 	return
 }

@@ -1,7 +1,5 @@
 package antchain
 
-import "github.com/tidwall/gjson"
-
 func (c *Client) CreateAccount(orderID string, newAccount string, newKmsID string) (publicKey string, err error) {
 	c.Shakehand()
 
@@ -23,15 +21,7 @@ func (c *Client) CreateAccount(orderID string, newAccount string, newKmsID strin
 		return
 	}
 
-	result := gjson.Get(string(data), "success")
-	if result.Bool() == false {
-		err = &AccessError{
-			message: gjson.Get(string(data), "data").String(),
-		}
-		return
-	}
-
-	publicKey = gjson.Get(string(data), "data").String()
+	publicKey = string(data)
 	return
 }
 
@@ -53,14 +43,27 @@ func (c *Client) Deposit(orderID string, content string, gas int) (hash string, 
 
 	data, err := c.doRequest(CHAIN_CALL_FOR_BIZ, params)
 
-	result := gjson.Get(string(data), "success")
-	if result.Bool() == false {
-		err = &AccessError{
-			message: gjson.Get(string(data), "data").String(),
-		}
-		return
+	hash = string(data)
+	return
+}
+
+func (c *Client) DeploySol(orderID string, contractName string, contractCode string, gas int) (data []byte, err error) {
+	c.Shakehand()
+
+	params := ParamsMap{
+		"orderId":      orderID,
+		"bizid":        c.BIZID,
+		"account":      c.Account,
+		"contractName": contractName,
+		"contractCode": contractCode,
+		"mykmsKeyId":   c.MykmsKeyID,
+		"method":       "DEPLOYCONTRACTFORBIZ",
+		"accessId":     c.AccessID,
+		"token":        c.Token,
+		"gas":          gas,
+		"tenantid":     c.TenantID,
 	}
 
-	hash = gjson.Get(string(data), "data").String()
+	data, err = c.doRequest(CHAIN_CALL_FOR_BIZ, params)
 	return
 }
