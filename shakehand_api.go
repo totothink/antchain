@@ -36,7 +36,10 @@ func (c *Client) getToken() (err error) {
 	}
 
 	result := gjson.Get(string(bytes), "success")
-	if result.String() == "" {
+	if result.Bool() == false {
+		err = &AccessError{
+			message: gjson.Get(string(bytes), "data").String(),
+		}
 		return
 	}
 
