@@ -1,4 +1,4 @@
-module antchain
+module github.com/totothink/antchain
 
 go 1.15
 
